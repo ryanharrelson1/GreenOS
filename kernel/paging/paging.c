@@ -53,6 +53,7 @@ static inline void enable_paging() {
 static uint32_t* alloc_page_table() {
     uint32_t frame = pmm_alloc_page();
     uint32_t* table = (uint32_t*)(frame);
+    paging_ident_map(frame, PAGE_SIZE, PAGE_RW | PAGE_PRESENT);
     memset(table, 0, PAGE_TABLE_SIZE);
     return table;
 }
