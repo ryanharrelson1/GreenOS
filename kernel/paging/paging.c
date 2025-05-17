@@ -175,6 +175,10 @@ void paging_unmap(uint32_t* dir, uint32_t virt_addr) {
 void paging_init() {
     current_directory = alloc_page_table(); // Allocated and zeroed
 
+     write_serial_string("paging_init: allocated current_directory at ");
+    serial_write_hex64((uintptr_t)current_directory);
+    write_serial_string("\n");
+
     // Map the kernel 1:1
     extern uint32_t kernel_start;
     extern uint32_t _kernel_end;
@@ -195,6 +199,11 @@ void paging_init() {
 
 static void paging_test_map_unmap() {
     uintptr_t test_virt = 0x400000; // 4MB aligned test address
+
+        if (!current_directory) {
+        write_serial_string("Test failed: current_directory is NULL\n");
+        return;
+    }
 
     // Map a page with RW permissions
     void* mapped = paging_map(test_virt, PAGE_RW);
