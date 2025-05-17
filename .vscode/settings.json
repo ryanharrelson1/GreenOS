@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.ejs": "html",
+        "idt.h": "c",
+        "stdint.h": "c",
+        "handler_init.h": "c"
+    }
+}

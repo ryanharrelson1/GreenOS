@@ -1,0 +1,218 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+                0x00000000                        kernel_start = .
+                0x00100000                        . = 0x100000
+
+.multiboot2     0x00100000       0x28
+ *(.multiboot2)
+ .multiboot2    0x00100000       0x28 boot.o
+
+.text           0x00100030     0x1cc5
+ *(.text*)
+ .text          0x00100030        0xf boot.o
+                0x00100030                _start
+ .text          0x0010003f       0x91 kernel.o
+                0x0010003f                kernel_main
+                0x00100089                trigger_invalid_opcode
+                0x0010008e                trigger_divide_by_zero
+                0x001000af                trigger_page_fault
+                0x001000c8                trigger_gpf
+ .text          0x001000d0       0x3c io.o
+                0x001000d0                outb
+                0x001000ef                inb
+ .text          0x0010010c      0x28d serial.o
+                0x00100131                init_serial
+                0x00100197                write_serial
+                0x001001c3                write_serial_string
+                0x001001f4                serial_write_dec
+                0x001002b4                serial_write_hex32
+                0x0010031b                serial_write_hex64
+ .text          0x00100399      0x361 panic.o
+                0x00100399                panic
+                0x0010044c                get_eip
+                0x00100460                dump_cpu_registers
+                0x001005f9                panic_print_backtrace
+                0x00100676                print_stack
+ .text          0x001006fa      0x26e gdt.o
+                0x001006fa                gdt_set_gate
+                0x00100798                gdt_install
+                0x0010083c                gdt_self_test
+ .text          0x00100968      0x165 tss.o
+                0x00100a0d                tss_install
+                0x00100a34                set_kernel_stack
+                0x00100a42                tss_self_test
+ *fill*         0x00100acd        0x3 
+ .text          0x00100ad0       0x21 gdt_flush.o
+                0x00100ad0                gdt_flush
+                0x00100ae9                tss_flush
+ .text          0x00100af1       0xfb idt.o
+                0x00100af1                idt_set_gate
+                0x00100b5b                idt_install
+ *fill*         0x00100bec        0x4 
+ .text          0x00100bf0        0x8 idt_flush.o
+                0x00100bf0                idt_flush
+ .text          0x00100bf8       0xe5 pic.o
+                0x00100bf8                pic_remap
+ .text          0x00100cdd       0xb0 handler_init.o
+                0x00100cdd                handlers_install
+ .text          0x00100d8d      0x101 exception.o
+                0x00100d8d                isr_divide_by_zero_stub_handler
+                0x00100dc2                isr_double_fault_stub_handler
+                0x00100df7                isr_gpf_stub_handler
+                0x00100e2c                isr_page_fault_stub_handler
+                0x00100e59                isr_generic_exception_stub_handler
+ *fill*         0x00100e8e        0x2 
+ .text          0x00100e90       0x54 isr_stub.o
+                0x00100e90                isr_divide_by_zero_stub
+                0x00100e9f                isr_double_fault_stub
+                0x00100eb0                isr_gpf_stub
+                0x00100ec1                isr_page_fault_stub
+                0x00100ed2                isr_generic_exception_stub
+ .text          0x00100ee4      0x12d memory_map.o
+                0x00100ee4                parse_memory_map
+ .text          0x00101011      0x729 pmm.o
+                0x00101011                pmm_init
+                0x0010134d                pmm_alloc_page
+                0x001013cd                pmm_free_page
+                0x0010144d                pmm_get_free_page_count
+                0x0010157c                pmm_get_used_page_count
+                0x00101599                pmm_print_total_memory
+                0x001015f8                pmm_print_free_memory
+ .text          0x0010173a       0x33 memset.o
+                0x0010173a                memset
+ .text          0x0010176d      0x588 paging.o
+                0x0010176d                serial_write_paging_map_info
+                0x00101905                paging_map
+                0x00101959                paging_ident_map
+                0x0010199f                paging_map_kernel
+                0x001019d8                paging_switch_dir
+                0x001019f4                paging_current_dir
+                0x001019fe                paging_create_user_directory
+                0x00101a57                paging_map_user
+                0x00101a82                paging_unmap
+                0x00101ba9                paging_init
+
+.iplt           0x00101cf5        0x0
+ .iplt          0x00101cf5        0x0 boot.o
+
+.rodata         0x00101cf8      0x545
+ *(.rodata*)
+ .rodata        0x00101cf8        0x3 serial.o
+ .rodata        0x00101cfb       0xb4 panic.o
+ *fill*         0x00101daf        0x1 
+ .rodata        0x00101db0       0xd1 gdt.o
+ *fill*         0x00101e81        0x3 
+ .rodata        0x00101e84       0x86 tss.o
+ *fill*         0x00101f0a        0x2 
+ .rodata        0x00101f0c       0x20 idt.o
+ .rodata        0x00101f2c       0xab exception.o
+ *fill*         0x00101fd7        0x1 
+ .rodata        0x00101fd8      0x17a pmm.o
+ *fill*         0x00102152        0x2 
+ .rodata        0x00102154       0xe9 paging.o
+
+.rel.dyn        0x00102240        0x0
+ .rel.got       0x00102240        0x0 boot.o
+ .rel.iplt      0x00102240        0x0 boot.o
+ .rel.text      0x00102240        0x0 boot.o
+
+.data           0x0010223d        0x0
+ *(.data*)
+ .data          0x0010223d        0x0 kernel.o
+ .data          0x0010223d        0x0 io.o
+ .data          0x0010223d        0x0 serial.o
+ .data          0x0010223d        0x0 panic.o
+ .data          0x0010223d        0x0 gdt.o
+ .data          0x0010223d        0x0 tss.o
+ .data          0x0010223d        0x0 idt.o
+ .data          0x0010223d        0x0 pic.o
+ .data          0x0010223d        0x0 handler_init.o
+ .data          0x0010223d        0x0 exception.o
+ .data          0x0010223d        0x0 memory_map.o
+ .data          0x0010223d        0x0 pmm.o
+ .data          0x0010223d        0x0 memset.o
+ .data          0x0010223d        0x0 paging.o
+
+.got            0x00102240        0x0
+ .got           0x00102240        0x0 boot.o
+
+.got.plt        0x00102240        0x0
+ .got.plt       0x00102240        0x0 boot.o
+
+.igot.plt       0x00102240        0x0
+ .igot.plt      0x00102240        0x0 boot.o
+
+.bss            0x00102240     0x4b94
+ *(.bss*)
+ .bss           0x00102240     0x4000 boot.o
+                0x00106240                stack_top
+ .bss           0x00106240        0x0 kernel.o
+ .bss           0x00106240        0x0 io.o
+ .bss           0x00106240        0x0 serial.o
+ .bss           0x00106240        0x0 panic.o
+ .bss           0x00106240       0x36 gdt.o
+                0x00106240                gdt_entries
+                0x00106270                gdt_ptr
+ *fill*         0x00106276        0xa 
+ .bss           0x00106280       0x68 tss.o
+                0x00106280                tss_entry
+ *fill*         0x001062e8       0x18 
+ .bss           0x00106300      0x80e idt.o
+                0x00106300                idt_entries
+                0x00106b00                idt_ptr
+                0x00106b08                idtr_actual
+ .bss           0x00106b0e        0x0 pic.o
+ .bss           0x00106b0e        0x0 handler_init.o
+ .bss           0x00106b0e        0x0 exception.o
+ *fill*         0x00106b0e       0x12 
+ .bss           0x00106b20      0x284 memory_map.o
+                0x00106b20                mem_regions
+                0x00106da0                region_count
+ *fill*         0x00106da4        0x4 
+ .bss           0x00106da8       0x24 pmm.o
+ .bss           0x00106dcc        0x0 memset.o
+ .bss           0x00106dcc        0x8 paging.o
+ *(COMMON)
+                0x00106dd4                        _kernel_end = .
+LOAD boot.o
+LOAD kernel.o
+LOAD io.o
+LOAD serial.o
+LOAD panic.o
+LOAD gdt.o
+LOAD tss.o
+LOAD gdt_flush.o
+LOAD idt.o
+LOAD idt_flush.o
+LOAD pic.o
+LOAD handler_init.o
+LOAD exception.o
+LOAD isr_stub.o
+LOAD memory_map.o
+LOAD pmm.o
+LOAD memset.o
+LOAD paging.o
+OUTPUT(kernel.elf elf32-i386)
+
+.comment        0x00000000       0x12
+ .comment       0x00000000       0x12 kernel.o
+                                 0x13 (size before relaxing)
+ .comment       0x00000012       0x13 io.o
+ .comment       0x00000012       0x13 serial.o
+ .comment       0x00000012       0x13 panic.o
+ .comment       0x00000012       0x13 gdt.o
+ .comment       0x00000012       0x13 tss.o
+ .comment       0x00000012       0x13 idt.o
+ .comment       0x00000012       0x13 pic.o
+ .comment       0x00000012       0x13 handler_init.o
+ .comment       0x00000012       0x13 exception.o
+ .comment       0x00000012       0x13 memory_map.o
+ .comment       0x00000012       0x13 pmm.o
+ .comment       0x00000012       0x13 memset.o
+ .comment       0x00000012       0x13 paging.o
