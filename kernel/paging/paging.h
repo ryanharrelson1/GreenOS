@@ -6,6 +6,7 @@
 #define PAGE_PRESENT 0x1
 #define PAGE_RW 0x2
 #define PAGE_USER 0x4
+#define PAGE_EXECUTE  0x0 
 #define PAGE_RX (PAGE_USER | PAGE_PRESENT | PAGE_EXECUTE)
 
 
