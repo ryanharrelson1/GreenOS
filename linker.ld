@@ -4,9 +4,9 @@ ENTRY(_start);
 
 
 SECTIONS {
-     kernel_start = .;
 
     . = 1M;
+    kernel_start = .;
 
     
     .multiboot2 :
@@ -31,6 +31,8 @@ SECTIONS {
         *(.bss*)
         *(COMMON)
     }
+
+
 
     _kernel_end = .;
 }

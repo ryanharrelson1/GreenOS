@@ -6,6 +6,7 @@ extern isr_double_fault_stub_handler
 extern isr_gpf_stub_handler
 extern isr_page_fault_stub_handler
 extern isr_generic_exception_stub_handler
+extern syscall
 
 global isr_divide_by_zero_stub
 isr_divide_by_zero_stub:
@@ -55,6 +56,15 @@ isr_generic_exception_stub:
     call isr_generic_exception_stub_handler
     add esp, 8
     sti
+    iret
+
+global isr_syscall
+
+isr_syscall:
+    cli
+    pusha
+    call syscall
+    popa
     iret
 
 

@@ -51,6 +51,14 @@ paging.o: kernel/paging/paging.c kernel/paging/paging.h
 	i686-elf-gcc -m32 -ffreestanding -c kernel/paging/paging.c -o paging.o
 
 
+user.o: kernel/usermode/user.c kernel/usermode/user.h
+	i686-elf-gcc -m32 -ffreestanding -c kernel/usermode/user.c -o user.o 
+
+usermode_jmp.o: kernel/usermode/usermode_jmp.s
+	nasm -f elf32 kernel/usermode/usermode_jmp.s -o usermode_jmp.o
+
+user_main.bin.o: user_main.bin
+	i686-elf-ld -r -b binary -o user_main.bin.o user_main.bin
 
 
 boot.o: boot.s 
@@ -59,8 +67,13 @@ boot.o: boot.s
 kernel.o: kernel/kernel_main.c
 	i686-elf-gcc -m32 -ffreestanding -c kernel/kernel_main.c -o kernel.o
 
-kernel.elf: boot.o kernel.o linker.ld io.o serial.o panic.o gdt.o tss.o gdt_flush.o idt.o idt_flush.o pic.o handler_init.o exception.o isr_stub.o memory_map.o pmm.o memset.o paging.o
-	i686-elf-ld -T linker.ld -Map=kernel.map -o kernel.elf boot.o kernel.o io.o serial.o panic.o gdt.o tss.o gdt_flush.o idt.o idt_flush.o pic.o handler_init.o exception.o isr_stub.o memory_map.o pmm.o memset.o paging.o
+user_main.bin: kernel/usermode/user_main.c kernel/usermode/user.ld
+	i686-elf-gcc -m32 -ffreestanding -nostdlib -T kernel/usermode/user.ld -o user_main.elf kernel/usermode/user_main.c
+	i686-elf-objcopy -O binary user_main.elf user_main.bin
+
+
+kernel.elf: boot.o kernel.o linker.ld io.o serial.o panic.o gdt.o tss.o gdt_flush.o idt.o idt_flush.o pic.o handler_init.o exception.o isr_stub.o memory_map.o pmm.o memset.o paging.o    
+	i686-elf-ld -T linker.ld -Map=kernel.map -o kernel.elf boot.o kernel.o io.o serial.o panic.o gdt.o tss.o gdt_flush.o idt.o idt_flush.o pic.o handler_init.o exception.o isr_stub.o memory_map.o pmm.o memset.o paging.o   
 
 iso: kernel.elf
 	mkdir -p isodir/boot/grub

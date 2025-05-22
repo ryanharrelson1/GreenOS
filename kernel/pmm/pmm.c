@@ -5,13 +5,14 @@
 #define PAGE_SIZE 4096
 
 extern uintptr_t _kernel_end ;
+uint64_t bitmap_phys_start = 0;
 
-static uint64_t bitmap_phys_start = 0;
+uintptr_t bitmap_phys_end = 0;
 
 
 
-static uint8_t* bitmap = 0;
-static size_t bitmap_size = 0;
+ uint8_t* bitmap = 0;
+ size_t bitmap_size = 0;
 static uint64_t memory_start = 0;
 static uint64_t memory_end = 0;
 static size_t total_pages = 0;
@@ -48,6 +49,7 @@ void pmm_init(struct mem_region* regions, size_t region_count){
     bitmap_size = (total_pages + 7) / 8;
 
     bitmap_phys_start = (_kernel_end + PAGE_SIZE -1) & ~(PAGE_SIZE - 1);
+    bitmap_phys_end = bitmap_phys_start + bitmap_size;
     bitmap = (uint8_t*)bitmap_phys_start;
 
     memset(bitmap, 0xFF, bitmap_size);
@@ -68,7 +70,7 @@ void pmm_init(struct mem_region* regions, size_t region_count){
         }
 
     }
-    write_serial_string("PMM INITALIZED");
+ 
 
   bitmap_set(0);  
 
@@ -81,18 +83,30 @@ void pmm_init(struct mem_region* regions, size_t region_count){
 
 
 uintptr_t pmm_alloc_page(void) {
-    for (size_t i = 0; i < total_pages; i++) {
-        if (!bitmap_test(i)) {
-            bitmap_set(i);
-            uintptr_t addr = page_to_addr(i);
-            memset((void*)addr, 0, PAGE_SIZE);
+    write_serial_string("pmm_alloc_page: start\n");
 
-         
+    for (size_t i = 0; i < total_pages; i++) {
+    
+        if (!bitmap_test(i)) {
+            write_serial_string("pmm_alloc_page: found free page index: ");
+            serial_write_hex32((uint32_t)i);
+            write_serial_string("\n");
+
+            bitmap_set(i);
+
+            uintptr_t addr = page_to_addr(i);
+            write_serial_string("pmm_alloc_page: allocated page phys addr: 0x");
+            serial_write_hex32((uint32_t)addr);
+            write_serial_string("\n");
+
+            write_serial_string("pmm_alloc_page: zeroing page memory\n");
+            write_serial_string("pmm_alloc_page: memset done\n");
 
             return addr;
         }
     }
 
+    write_serial_string("pmm_alloc_page: out of memory panic\n");
     panic("PMM: Out of physical memory!");
     return 0;
 }
@@ -106,6 +120,17 @@ void pmm_free_page(uintptr_t  phys_addr) {
   
    bitmap_clear(page);
 }
+
+void pmm_mark_region_used(uintptr_t addr, size_t size) {
+    if (addr < memory_start) addr = memory_start;
+    if (addr + size > memory_end) size = memory_end - addr;
+
+    for (uintptr_t a = addr; a < addr + size; a += PAGE_SIZE) {
+        size_t page = (a - memory_start) / PAGE_SIZE;
+        bitmap_set(page);
+    }
+}
+
 
 
 size_t pmm_get_free_page_count(void) {
@@ -145,24 +170,22 @@ size_t pmm_get_used_page_count(void) {
 
 void pmm_print_total_memory(void) {
     uint64_t total_bytes = (memory_end - memory_start);
-    write_serial_string("Total memory: ");
-    serial_write_hex64(total_bytes);
-    write_serial_string(" bytes\n");
+
 }
 
 void pmm_print_free_memory(void) {
     size_t free_pages = pmm_get_free_page_count();
     uint64_t free_bytes = free_pages * PAGE_SIZE;
 
-    write_serial_string("Free memory: ");
+  
     
     // If you have a helper to print numbers in decimal or hex, use it here.
     // Otherwise, let's print hex as example:
 
     // Print hex representation (assuming write_serial_hex prints uint64_t in hex)
-    serial_write_hex64(free_bytes);
 
-    write_serial_string(" bytes\n");
+
+ 
 }
 
 

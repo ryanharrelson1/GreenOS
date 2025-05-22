@@ -4,6 +4,8 @@
         "idt.h": "c",
         "stdint.h": "c",
         "handler_init.h": "c",
-        "paging.h": "c"
+        "paging.h": "c",
+        "memory_map.h": "c",
+        "random": "c"
     }
 }

@@ -7,6 +7,12 @@
 #include "../memset.h"
 
 
+extern uintptr_t bitmap_phys_end;
+extern uint64_t bitmap_phys_start;
+
+
+void pmm_mark_region_used(uintptr_t addr, size_t size);
+
 void pmm_init(struct mem_region* regions, size_t region_count);
 
 uintptr_t pmm_alloc_page(void);
