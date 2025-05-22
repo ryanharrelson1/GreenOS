@@ -1,4 +1,6 @@
 
+There are no discarded input sections
+
 Memory Configuration
 
 Name             Origin             Length             Attributes
@@ -13,7 +15,7 @@ Linker script and memory map
  *(.multiboot2)
  .multiboot2    0x00100000       0x28 boot.o
 
-.text           0x00100030     0x2488
+.text           0x00100030     0x2491
  *(.text*)
  .text          0x00100030        0xf boot.o
                 0x00100030                _start
@@ -91,62 +93,62 @@ Linker script and memory map
  .text          0x00101a5f       0x74 memset.o
                 0x00101a5f                memset
                 0x00101a92                memcpy
- .text          0x00101ad3      0x9e5 paging.o
+ .text          0x00101ad3      0x9ee paging.o
                 0x00101b10                paging_map_page
                 0x00101e06                paging_unmap_page
                 0x00101fd8                paging_init
-                0x00102371                paging_run_tests
+                0x0010237a                paging_run_tests
 
-.iplt           0x001024b8        0x0
- .iplt          0x001024b8        0x0 boot.o
+.iplt           0x001024c1        0x0
+ .iplt          0x001024c1        0x0 boot.o
 
-.rodata         0x001024b8      0xc33
+.rodata         0x001024c4      0xc33
  *(.rodata*)
- .rodata        0x001024b8       0xd7 kernel.o
- .rodata        0x0010258f        0x3 serial.o
- .rodata        0x00102592       0xb4 panic.o
- *fill*         0x00102646        0x2 
- .rodata        0x00102648       0xd1 gdt.o
- *fill*         0x00102719        0x3 
- .rodata        0x0010271c       0x86 tss.o
- *fill*         0x001027a2        0x2 
- .rodata        0x001027a4       0x20 idt.o
- .rodata        0x001027c4       0xb3 exception.o
- *fill*         0x00102877        0x1 
- .rodata        0x00102878      0x222 pmm.o
- *fill*         0x00102a9a        0x2 
- .rodata        0x00102a9c      0x64f paging.o
+ .rodata        0x001024c4       0xd7 kernel.o
+ .rodata        0x0010259b        0x3 serial.o
+ .rodata        0x0010259e       0xb4 panic.o
+ *fill*         0x00102652        0x2 
+ .rodata        0x00102654       0xd1 gdt.o
+ *fill*         0x00102725        0x3 
+ .rodata        0x00102728       0x86 tss.o
+ *fill*         0x001027ae        0x2 
+ .rodata        0x001027b0       0x20 idt.o
+ .rodata        0x001027d0       0xb3 exception.o
+ *fill*         0x00102883        0x1 
+ .rodata        0x00102884      0x222 pmm.o
+ *fill*         0x00102aa6        0x2 
+ .rodata        0x00102aa8      0x64f paging.o
 
-.rel.dyn        0x001030ec        0x0
- .rel.got       0x001030ec        0x0 boot.o
- .rel.iplt      0x001030ec        0x0 boot.o
- .rel.text      0x001030ec        0x0 boot.o
+.rel.dyn        0x001030f8        0x0
+ .rel.got       0x001030f8        0x0 boot.o
+ .rel.iplt      0x001030f8        0x0 boot.o
+ .rel.text      0x001030f8        0x0 boot.o
 
-.data           0x001030eb        0x0
+.data           0x001030f7        0x0
  *(.data*)
- .data          0x001030eb        0x0 kernel.o
- .data          0x001030eb        0x0 io.o
- .data          0x001030eb        0x0 serial.o
- .data          0x001030eb        0x0 panic.o
- .data          0x001030eb        0x0 gdt.o
- .data          0x001030eb        0x0 tss.o
- .data          0x001030eb        0x0 idt.o
- .data          0x001030eb        0x0 pic.o
- .data          0x001030eb        0x0 handler_init.o
- .data          0x001030eb        0x0 exception.o
- .data          0x001030eb        0x0 memory_map.o
- .data          0x001030eb        0x0 pmm.o
- .data          0x001030eb        0x0 memset.o
- .data          0x001030eb        0x0 paging.o
+ .data          0x001030f7        0x0 kernel.o
+ .data          0x001030f7        0x0 io.o
+ .data          0x001030f7        0x0 serial.o
+ .data          0x001030f7        0x0 panic.o
+ .data          0x001030f7        0x0 gdt.o
+ .data          0x001030f7        0x0 tss.o
+ .data          0x001030f7        0x0 idt.o
+ .data          0x001030f7        0x0 pic.o
+ .data          0x001030f7        0x0 handler_init.o
+ .data          0x001030f7        0x0 exception.o
+ .data          0x001030f7        0x0 memory_map.o
+ .data          0x001030f7        0x0 pmm.o
+ .data          0x001030f7        0x0 memset.o
+ .data          0x001030f7        0x0 paging.o
 
-.got            0x001030ec        0x0
- .got           0x001030ec        0x0 boot.o
+.got            0x001030f8        0x0
+ .got           0x001030f8        0x0 boot.o
 
-.got.plt        0x001030ec        0x0
- .got.plt       0x001030ec        0x0 boot.o
+.got.plt        0x001030f8        0x0
+ .got.plt       0x001030f8        0x0 boot.o
 
-.igot.plt       0x001030ec        0x0
- .igot.plt      0x001030ec        0x0 boot.o
+.igot.plt       0x001030f8        0x0
+ .igot.plt      0x001030f8        0x0 boot.o
 
 .bss            0x00103100     0x4b9c
  *(.bss*)

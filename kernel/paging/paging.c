@@ -154,11 +154,11 @@ uintptr_t paging_init(uintptr_t identity_map_end) {
 
 
     // these are for paging init only do not use 
-    uint32_t total_pages = identity_map_end / PAGE_SIZE;
-    uint32_t tables_needed = (total_pages + PAGE_ENTRIES - 1) / PAGE_ENTRIES;
+   uint32_t temp_pages = identity_map_end / PAGE_SIZE;
+    uint32_t tables_needed = (temp_pages + PAGE_ENTRIES - 1) / PAGE_ENTRIES;
 
     write_serial_string("[paging_init] total_pages=0x");
-    serial_write_hex32(total_pages);
+    serial_write_hex32(temp_pages);
     write_serial_string(", tables_needed=0x");
     serial_write_hex32(tables_needed);
     write_serial_string("\n");
@@ -168,6 +168,8 @@ uintptr_t paging_init(uintptr_t identity_map_end) {
     uintptr_t page_tables_start = identity_map_end;
     uintptr_t page_directory_start = page_tables_start + tables_needed * PAGE_SIZE;
     uintptr_t final_end = page_directory_start + PAGE_SIZE;
+
+    uint32_t total_pages = final_end / PAGE_SIZE;
 
     write_serial_string("[paging_init] page_tables_start=0x");
     serial_write_hex32((uint32_t)page_tables_start);
