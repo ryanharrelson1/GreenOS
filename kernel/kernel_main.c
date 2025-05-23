@@ -66,8 +66,16 @@ void kernel_main(uintptr_t  mb_info_addr) {
     pic_remap();
     handlers_install();
     parse_memory_map(mb_info_addr);
+
+    uintptr_t paging_region_start = bitmap_phys_end; 
     
    uintptr_t physical_end = paging_init(bitmap_phys_end);
+
+   pmm_mark_region_used(paging_region_start, physical_end - paging_region_start);
+
+
+
+   
 
   
 
@@ -75,9 +83,8 @@ void kernel_main(uintptr_t  mb_info_addr) {
    
    
 
-  serial_write_hex32((uint32_t)&_kernel_end);
-  write_serial_string("\n"); // address of the symbol
-   serial_write_hex32((uint32_t)_kernel_end);
+
+   serial_write_hex32((uint32_t)physical_end);
    write_serial_string("\n");   // value it holds
 
   serial_write_hex32(bitmap_phys_start);  

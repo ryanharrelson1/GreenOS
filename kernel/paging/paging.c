@@ -16,6 +16,11 @@
 #define PTE_RW 0x2
 #define PTE_USER 0x4
 #define ALIGN_UP(x, a) (((x) + ((a)-1)) & ~((a)-1))
+#define KERNEL_PHYS_WINDOW 0xC0000000
+#define phys_to_virt(p) ((void*)((uintptr_t)(p) + KERNEL_PHYS_WINDOW))
+#define virt_to_phys(v) ((uintptr_t)(v) - KERNEL_PHYS_WINDOW)
+
+
 // these are for init only do not use
 static uint32_t* page_directory;
 static uint32_t* page_tables;
@@ -26,6 +31,25 @@ static inline void flush_tlb_single(uintptr_t addr) {
     serial_write_hex32((uint32_t)addr);
       write_serial_string("\n");
     __asm__ volatile("invlpg (%0)" ::"r"(addr) : "memory");
+}
+void map_physical_memory_window(uintptr_t max_phys) {
+    for (uintptr_t phys = 0; phys < max_phys; phys += PAGE_SIZE) {
+        uintptr_t virt = KERNEL_PHYS_WINDOW + phys;
+
+        uint32_t pd_index = (virt >> 22) & 0x3FF;
+        uint32_t pt_index = (virt >> 12) & 0x3FF;
+
+        if (!(page_directory[pd_index] & PDE_PRESENT)) {
+            uint32_t* new_pt = (uint32_t*)pmm_alloc_page();
+            if (!new_pt) panic("Out of memory for PT");
+
+            memset(new_pt, 0, PAGE_SIZE);
+            page_directory[pd_index] = ((uintptr_t)new_pt) | PDE_PRESENT | PDE_RW;
+        }
+
+        uint32_t* page_table = (uint32_t*)(page_directory[pd_index] & ~0xFFF);
+        page_table[pt_index] = (phys & ~0xFFF) | PTE_PRESENT | PTE_RW;
+    }
 }
 
 void paging_map_page(uintptr_t virt, uintptr_t phys, uint32_t flags){
@@ -55,12 +79,12 @@ void paging_map_page(uintptr_t virt, uintptr_t phys, uint32_t flags){
 
     if(!(pd_entry & PDE_PRESENT)){
          write_serial_string("[paging_map_page] PDE not present, allocating new page table\n");
-        uint32_t* new_pt = (uint32_t*)pmm_alloc_page();
-        if (!new_pt) {
+        uint32_t* new_pt  = (uint32_t*)pmm_alloc_page();
+        if (!new_pt ) {
       panic("Out of memory: failed to allocate page table");
      }
-        memset(new_pt, 0, PAGE_SIZE);
-
+        memset(phys_to_virt(new_pt), 0, PAGE_SIZE);
+        
          write_serial_string("[paging_map_page] New PT phys addr: 0x");
         serial_write_hex32((uint32_t)new_pt);
         write_serial_string("\n");
@@ -206,14 +230,15 @@ write_serial_string("[paging_init] Identity mapping pages...\n");
 
         page_tables[page_idx] = (page_idx * PAGE_SIZE) | PTE_PRESENT | PTE_RW;
 
+
          write_serial_string("[paging_init] PTE set at index ");
         serial_write_hex32(page_idx);
         write_serial_string(" to 0x");
         serial_write_hex32(page_tables[page_idx]);
         write_serial_string("\n");
-    }
-
-     write_serial_string("[paging_init] Loading CR3 and enabling paging\n");
+    } 
+    map_physical_memory_window(final_end);
+ 
     // Load CR3 and enable paging
     __asm__ __volatile__ (
         "mov %0, %%cr3\n"
@@ -224,7 +249,9 @@ write_serial_string("[paging_init] Identity mapping pages...\n");
         : "r"(page_directory)
         : "eax"
     );
-  write_serial_string("yes u completing it\n");
+       
+
+     write_serial_string("[paging_init] Loading CR3 and enabling paging\n");
 
   uintptr_t phys = page_directory_start;
    uint32_t dir_idx = phys >> 22;
