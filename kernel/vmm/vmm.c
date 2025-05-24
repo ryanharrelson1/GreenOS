@@ -63,3 +63,48 @@ void* vmm_alloc(size_t size, uint32_t flags){
 
       return (void*)addr;
 }
+
+void vmm_free(void* addr){
+
+    uintptr_t target = (uintptr_t)addr;
+
+    vmm_region_t* prev = NULL;
+    vmm_region_t* current = vmm_head;
+
+     while (current) {
+        if (current->start == target) {
+            if (prev) {
+                prev->next = current->next;
+            } else {
+                vmm_head = current->next;
+            }
+            pmm_free((void*)current);
+            return;
+        }
+       prev = current;
+       current = current->next; 
+}
+}
+
+int vmm_map(void* virt_addr, uintptr_t phys_addr, size_t size, uint32_t flags) {
+    size = (size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+    uintptr_t va = (uintptr_t)virt_addr;
+
+    for (size_t i = 0; i < size; i += PAGE_SIZE) {
+        if (!paging_map_page(va + i, phys_addr + i, flags)) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int vmm_unmap(void* virt_addr, size_t size) {
+    size = (size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+    uintptr_t va = (uintptr_t)virt_addr;
+
+    for (size_t i = 0; i < size; i += PAGE_SIZE) {
+        paging_unmap_page(va + i);
+    }
+    return 0;
+}
+
