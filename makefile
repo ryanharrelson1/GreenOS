@@ -50,6 +50,10 @@ memset.o: kernel/memset.c kernel/memset.h
 paging.o: kernel/paging/paging.c kernel/paging/paging.h 
 	i686-elf-gcc -m32 -ffreestanding -c kernel/paging/paging.c -o paging.o
 
+vmm.o: kernel/vmm/vmm.c kernel/vmm/vmm.h
+	i686-elf-gcc -m32 -ffreestanding -c kernel/vmm/vmm.c -o vmm.o
+	
+
 
 user.o: kernel/usermode/user.c kernel/usermode/user.h
 	i686-elf-gcc -m32 -ffreestanding -c kernel/usermode/user.c -o user.o 
@@ -72,8 +76,8 @@ user_main.bin: kernel/usermode/user_main.c kernel/usermode/user.ld
 	i686-elf-objcopy -O binary user_main.elf user_main.bin
 
 
-kernel.elf: boot.o kernel.o linker.ld io.o serial.o panic.o gdt.o tss.o gdt_flush.o idt.o idt_flush.o pic.o handler_init.o exception.o isr_stub.o memory_map.o pmm.o memset.o paging.o    
-	i686-elf-ld -T linker.ld -Map=kernel.map -o kernel.elf boot.o kernel.o io.o serial.o panic.o gdt.o tss.o gdt_flush.o idt.o idt_flush.o pic.o handler_init.o exception.o isr_stub.o memory_map.o pmm.o memset.o paging.o   
+kernel.elf: boot.o kernel.o linker.ld io.o serial.o panic.o gdt.o tss.o gdt_flush.o idt.o idt_flush.o pic.o handler_init.o exception.o isr_stub.o memory_map.o pmm.o memset.o paging.o vmm.o    
+	i686-elf-ld -T linker.ld -Map=kernel.map -o kernel.elf boot.o kernel.o io.o serial.o panic.o gdt.o tss.o gdt_flush.o idt.o idt_flush.o pic.o handler_init.o exception.o isr_stub.o memory_map.o pmm.o memset.o paging.o vmm.o   
 
 iso: kernel.elf
 	mkdir -p isodir/boot/grub

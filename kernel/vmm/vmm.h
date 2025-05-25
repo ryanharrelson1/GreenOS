@@ -11,6 +11,7 @@
 #define VMM_FLAG_EXEC 0x4
 
 
+
 void vmm_init(void);
 
 
@@ -21,6 +22,8 @@ void vmm_free(void* addr);
 int vmm_map(void* virt_addr, uintptr_t phys_addr, size_t size, uint32_t flags);
 
 int vmm_unmap(void* virt_addr, size_t size);
+
+void test_vmm();
 
 
 #endif

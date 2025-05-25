@@ -16,9 +16,7 @@
 #define PTE_RW 0x2
 #define PTE_USER 0x4
 #define ALIGN_UP(x, a) (((x) + ((a)-1)) & ~((a)-1))
-#define KERNEL_PHYS_WINDOW 0xC0000000
-#define phys_to_virt(p) ((void*)((uintptr_t)(p) + KERNEL_PHYS_WINDOW))
-#define virt_to_phys(v) ((uintptr_t)(v) - KERNEL_PHYS_WINDOW)
+
 
 
 // these are for init only do not use
@@ -32,6 +30,34 @@ static inline void flush_tlb_single(uintptr_t addr) {
       write_serial_string("\n");
     __asm__ volatile("invlpg (%0)" ::"r"(addr) : "memory");
 }
+
+void* vmm_temp_map(uintptr_t phys_addr) {
+    uint32_t pd_index = (TEMP_MAP_ADDR >> 22) & 0x3FF;
+    uint32_t pt_index = (TEMP_MAP_ADDR >> 12) & 0x3FF;
+
+    // Ensure page table exists
+    if (!(page_directory[pd_index] & PDE_PRESENT)) {
+        uintptr_t pt_phys = pmm_alloc_page();
+        if (!pt_phys) panic("Out of memory for temp PT");
+
+        // Just install the page table. No memset, no touching it.
+        page_directory[pd_index] = pt_phys | PDE_PRESENT | PDE_RW;
+    }
+
+    // Get the page table from the directory
+    uint32_t* pt = (uint32_t*)(page_directory[pd_index] & ~0xFFF);
+
+    // Map the physical page to TEMP_MAP_ADDR
+    pt[pt_index] = (phys_addr & ~0xFFF) | PTE_PRESENT | PTE_RW;
+
+    // Invalidate the TLB so it picks up the new mapping
+    flush_tlb_single(TEMP_MAP_ADDR);
+
+    return (void*)TEMP_MAP_ADDR;
+}
+
+
+
 void map_physical_memory_window(uintptr_t max_phys) {
     for (uintptr_t phys = 0; phys < max_phys; phys += PAGE_SIZE) {
         uintptr_t virt = KERNEL_PHYS_WINDOW + phys;
