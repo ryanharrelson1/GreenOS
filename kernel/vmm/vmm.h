@@ -1,29 +1,17 @@
 #ifndef VMM_H
 #define VMM_H
 
+#define PAGE_SIZE 4096
+#define USER_VIRT_START     0x00100000   // Skip first 1MB
+#define USER_VIRT_END       0xBFFFFFFF   // End before kernel
 
-#include <stddef.h>
-#include "../stdint.h"
-
-
-#define VMM_FLAG_RW   0x1
-#define VMM_FLAG_USER 0x2
-#define VMM_FLAG_EXEC 0x4
-
-
-
-void vmm_init(void);
-
-
-void* vmm_alloc(size_t size, uint32_t flags);
-
-void vmm_free(void* addr);
-
-int vmm_map(void* virt_addr, uintptr_t phys_addr, size_t size, uint32_t flags);
-
-int vmm_unmap(void* virt_addr, size_t size);
-
-void test_vmm();
-
+#define KERNEL_HEAP_START   0xC1000000
+#define KERNEL_HEAP_END     0xE0000000
+#define PAGE_PRESENT  0x1
+#define PAGE_WRITE    0x2
+#define PAGE_USER     0x4
 
 #endif
+
+
+

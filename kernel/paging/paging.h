@@ -17,6 +17,8 @@
 
 uintptr_t paging_init(uintptr_t identity_map_end);
 void* phys_map(uintptr_t phys_addr);
+void paging_map_page(uintptr_t virt, uintptr_t phys, uint32_t flags);
+void paging_unmap_page(uintptr_t virtual_addr);
 
 
 
