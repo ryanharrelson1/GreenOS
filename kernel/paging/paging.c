@@ -103,6 +103,11 @@ void paging_map_page(uintptr_t virt, uintptr_t phys, uint32_t flags){
     serial_write_hex32(pd_entry);
     write_serial_string("\n");
 
+    uint32_t pt_phys = pd_entry & ~0xFFF;
+  write_serial_string("[paging_map_page] Resolved page table phys address: 0x");
+  serial_write_hex32(pt_phys);
+  write_serial_string("\n");
+
     if(!(pd_entry & PDE_PRESENT)){
          write_serial_string("[paging_map_page] PDE not present, allocating new page table\n");
         uint32_t* new_pt  = (uint32_t*)pmm_alloc_page();

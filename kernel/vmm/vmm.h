@@ -10,8 +10,16 @@
 #define PAGE_PRESENT  0x1
 #define PAGE_WRITE    0x2
 #define PAGE_USER     0x4
-#define VMM_REGION_POOL_VADDR 0xFFFFF00000000000UL  // example: kernel high half unused region
-#define VMM_REGION_POOL_PAGES 4                     // 4 pages => ~16KB slab
+#define VMM_REGION_POOL_VADDR 0xC0000000   // example: kernel high half unused region
+#define VMM_REGION_POOL_PAGES 4 
+#include <stddef.h>
+#include <stdbool.h>
+#include "../stdint.h"                    // 4 pages => ~16KB slab
+
+void vmm_init();
+void* vmm_alloc(uint32_t size, bool kernel);
+void vmm_free(void* addr, uint32_t size, bool kernel);
+void vmm_run_inline_tests();
 
 #endif
 

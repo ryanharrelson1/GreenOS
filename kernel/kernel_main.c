@@ -75,46 +75,10 @@ void kernel_main(uintptr_t  mb_info_addr) {
    pmm_mark_region_used(paging_region_start, physical_end - paging_region_start);
    vmm_init();
 
-
-     uintptr_t phys = pmm_alloc_page();
-    if (!phys) {
-        write_serial_string("PMM alloc failed!\n");
-        return;
-    }
-
-    write_serial_string("Allocated physical page at: ");
-    serial_write_hex32((uint32_t)phys);
-    write_serial_string("\n");
-
-    void* temp = vmm_temp_map(phys);
-    if (!temp) {
-        write_serial_string("vmm_temp_map failed!\n");
-        return;
-    }
-
-    write_serial_string("Mapped to temp addr: ");
-    serial_write_hex32((uint32_t)(uintptr_t)temp);
-    write_serial_string("\n");
-
-    *((volatile uint32_t*)temp) = 0xDEADBEEF;
-    if (*((volatile uint32_t*)temp) == 0xDEADBEEF) {
-        write_serial_string("Temp map memory write/read OK\n");
-    } else {
-        write_serial_string("Temp map memory write/read FAIL\n");
-    }
-
-
-    write_serial_string("done it wokred fuck me\n");
-   
+   //vmm_run_inline_tests();
 
 
 
-   
-
-  
-
-
-   
    
 
 
@@ -124,8 +88,8 @@ void kernel_main(uintptr_t  mb_info_addr) {
   serial_write_hex32(bitmap_phys_start);  
      
 
-   //paging_run_tests();
-   //test_vmm();
+   paging_run_tests();
+
 
   
  

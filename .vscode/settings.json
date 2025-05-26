@@ -6,6 +6,7 @@
         "handler_init.h": "c",
         "paging.h": "c",
         "memory_map.h": "c",
-        "random": "c"
+        "random": "c",
+        "stdbool.h": "c"
     }
 }
