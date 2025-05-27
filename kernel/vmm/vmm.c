@@ -5,6 +5,8 @@
 #include"../consol/serial.h"
 #include "../alarm/panic.h"
 
+#define TEST_ADDR 0xCAFEB000
+
 
 typedef struct vmm_region
 {
@@ -190,6 +192,7 @@ void* vmm_alloc(uint32_t size, bool kernel) {
         write_serial_string("\n");
 
         if (curr->size >= size) {
+            
             uint32_t result = curr->start;
 
             write_serial_string("[vmm_alloc] Found suitable region at ");

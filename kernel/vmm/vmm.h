@@ -2,7 +2,7 @@
 #define VMM_H
 
 #define PAGE_SIZE 4096
-#define USER_VIRT_START     0x00100000   // Skip first 1MB
+#define USER_VIRT_START     0x40000000    // Skip first 1MB
 #define USER_VIRT_END       0xBFFFFFFF   // End before kernel
 
 #define KERNEL_HEAP_START   0xC1000000

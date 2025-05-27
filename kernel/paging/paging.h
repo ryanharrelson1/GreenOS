@@ -8,6 +8,8 @@
 #define PAGE_SIZE 4096
 #define PAGE_ENTRIES 1024
 #define TEMP_MAP_ADDR 0xF0000000
+#define RECURSIVE_SLOT 1023               // 0x3FF, last PDE entry for recursion
+#define RECURSIVE_BASE_VADDR 0xFFC00000   // Base address of recursive mapping
 
 
 #define KERNEL_PHYS_WINDOW 0xC0000000

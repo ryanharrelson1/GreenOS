@@ -16,6 +16,7 @@
 #define PTE_RW 0x2
 #define PTE_USER 0x4
 #define ALIGN_UP(x, a) (((x) + ((a)-1)) & ~((a)-1))
+#define TEMP_VIRT_ADDR 0xCAFEB000 
 
 
 
@@ -31,30 +32,9 @@ static inline void flush_tlb_single(uintptr_t addr) {
     __asm__ volatile("invlpg (%0)" ::"r"(addr) : "memory");
 }
 
-void* vmm_temp_map(uintptr_t phys_addr) {
-    uint32_t pd_index = (TEMP_MAP_ADDR >> 22) & 0x3FF;
-    uint32_t pt_index = (TEMP_MAP_ADDR >> 12) & 0x3FF;
 
-    // Ensure page table exists
-    if (!(page_directory[pd_index] & PDE_PRESENT)) {
-        uintptr_t pt_phys = pmm_alloc_page();
-        if (!pt_phys) panic("Out of memory for temp PT");
 
-        // Just install the page table. No memset, no touching it.
-        page_directory[pd_index] = pt_phys | PDE_PRESENT | PDE_RW;
-    }
 
-    // Get the page table from the directory
-    uint32_t* pt = (uint32_t*)(page_directory[pd_index] & ~0xFFF);
-
-    // Map the physical page to TEMP_MAP_ADDR
-    pt[pt_index] = (phys_addr & ~0xFFF) | PTE_PRESENT | PTE_RW;
-
-    // Invalidate the TLB so it picks up the new mapping
-    flush_tlb_single(TEMP_MAP_ADDR);
-
-    return (void*)TEMP_MAP_ADDR;
-}
 
 
 
@@ -77,6 +57,11 @@ void map_physical_memory_window(uintptr_t max_phys) {
         page_table[pt_index] = (phys & ~0xFFF) | PTE_PRESENT | PTE_RW;
     }
 }
+
+uint32_t* get_page_table_virt(uint32_t pd_index) {
+    return (uint32_t*)(RECURSIVE_BASE_VADDR + (pd_index * PAGE_SIZE));
+}
+
 
 void paging_map_page(uintptr_t virt, uintptr_t phys, uint32_t flags){
      write_serial_string("[paging_map_page] Called with virt=0x");
@@ -103,23 +88,29 @@ void paging_map_page(uintptr_t virt, uintptr_t phys, uint32_t flags){
     serial_write_hex32(pd_entry);
     write_serial_string("\n");
 
-    uint32_t pt_phys = pd_entry & ~0xFFF;
-  write_serial_string("[paging_map_page] Resolved page table phys address: 0x");
-  serial_write_hex32(pt_phys);
-  write_serial_string("\n");
+
 
     if(!(pd_entry & PDE_PRESENT)){
          write_serial_string("[paging_map_page] PDE not present, allocating new page table\n");
-        uint32_t* new_pt  = (uint32_t*)pmm_alloc_page();
-        if (!new_pt ) {
+      uint32_t pt_phys = pmm_alloc_page(); 
+        if (!pt_phys ) {
       panic("Out of memory: failed to allocate page table");
      }
-        memset(phys_to_virt(new_pt), 0, PAGE_SIZE);
+
+   
+    
+
         
          write_serial_string("[paging_map_page] New PT phys addr: 0x");
-        serial_write_hex32((uint32_t)new_pt);
+        serial_write_hex32((uint32_t)pt_phys);
         write_serial_string("\n");
-        page_directory[pd_index] = ((uint32_t)new_pt) | PDE_PRESENT | PDE_RW | PDE_USER;
+        page_directory[pd_index] = pt_phys | PDE_PRESENT | PDE_RW | PDE_USER;
+        flush_tlb_single(0xFFFFF000 + (pd_index * PAGE_SIZE)); 
+
+
+        uint32_t* pt_virt = get_page_table_virt(pd_index);
+        memset(pt_virt, 0, PAGE_SIZE);
+
 
          write_serial_string("[paging_map_page] Updated PDE at index ");
         serial_write_hex32(pd_index);
@@ -129,7 +120,7 @@ void paging_map_page(uintptr_t virt, uintptr_t phys, uint32_t flags){
     
     }
 
-    uint32_t* page_table= (uint32_t*)(page_directory[pd_index] & ~0xFFF);
+    uint32_t* page_table = get_page_table_virt(pd_index);
      write_serial_string("[paging_map_page] Page table address: 0x");
     serial_write_hex32((uint32_t)page_table);
     write_serial_string("\n");
@@ -268,6 +259,11 @@ write_serial_string("[paging_init] Identity mapping pages...\n");
         serial_write_hex32(page_tables[page_idx]);
         write_serial_string("\n");
     } 
+
+    page_directory[1023] = ((uintptr_t)page_directory) | PDE_PRESENT | PDE_RW;
+
+    write_serial_string("[paging_init] Set recursive mapping at PDE index 1023\n");
+    
     map_physical_memory_window(final_end);
  
     // Load CR3 and enable paging
@@ -316,7 +312,7 @@ write_serial_string("\n");
         panic("Test failed: couldn't allocate physical page");
     }
 
-    uintptr_t test_virt = 0xCAFEB000; // Arbitrary virtual address
+    uintptr_t test_virt = 0x40000000; // Arbitrary virtual address
      write_serial_string("mapping\n");
     // Step 2: Map the page
     paging_map_page(test_virt, (uintptr_t)phys_addr, PTE_RW | PTE_USER);
