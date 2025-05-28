@@ -5,7 +5,7 @@
 #include"../consol/serial.h"
 #include "../alarm/panic.h"
 
-#define TEST_ADDR 0xCAFEB000
+
 
 
 typedef struct vmm_region

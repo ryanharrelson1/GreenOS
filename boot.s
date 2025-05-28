@@ -2,6 +2,7 @@
 [GLOBAL _start]
 [EXTERN kernel_main]
 [GLOBAL stack_top]
+[EXTERN setup]
 
 
 
@@ -34,12 +35,8 @@ _start:
     ; set stack top
     mov esp, stack_top
 
-    push ebx
     
-
-    ; call c kernel_main
-
-    call kernel_main
+    call setup
 
 .hang:
     cli

@@ -17,6 +17,7 @@
 #define PTE_USER 0x4
 #define ALIGN_UP(x, a) (((x) + ((a)-1)) & ~((a)-1))
 #define TEMP_VIRT_ADDR 0xCAFEB000 
+#define HIGHER_HALF_STACK_VADDR  ((void*)0xC0090000)
 
 
 
@@ -31,10 +32,6 @@ static inline void flush_tlb_single(uintptr_t addr) {
       write_serial_string("\n");
     __asm__ volatile("invlpg (%0)" ::"r"(addr) : "memory");
 }
-
-
-
-
 
 
 
@@ -158,7 +155,7 @@ void paging_unmap_page(uintptr_t virtual_addr) {
         return; // Page table not present
     }
 
-    uint32_t* pt = (uint32_t*)(page_directory[pd_index] & ~0xFFF);
+   uint32_t* pt = get_page_table_virt(pd_index);
 
     write_serial_string("[paging_unmap_page] Page table address: 0x");
     serial_write_hex32((uint32_t)pt);
@@ -292,6 +289,18 @@ if (page_directory[dir_idx] & PDE_PRESENT) {
 } else {
     write_serial_string("Page directory is NOT mapped!\n");
 }
+
+
+write_serial_string("[paging_init] Jumping to higher half kernel...\n");
+
+__asm__ __volatile__ (
+    "mov %0, %%esp\n"   // Set stack pointer to higher half stack
+    "jmp *%1\n"         // Jump to kernel entry point at 0xC0000000
+    :
+    : "r"(0xC0100000 ), "r"(0xC0000000)
+    : "memory"
+);
+
     return final_end;
 }
 

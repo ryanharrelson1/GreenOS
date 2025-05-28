@@ -75,7 +75,7 @@ void kernel_main(uintptr_t  mb_info_addr) {
    pmm_mark_region_used(paging_region_start, physical_end - paging_region_start);
    vmm_init();
 
-   //vmm_run_inline_tests();
+   vmm_run_inline_tests();
 
 
 
@@ -88,7 +88,7 @@ void kernel_main(uintptr_t  mb_info_addr) {
   serial_write_hex32(bitmap_phys_start);  
      
 
-   paging_run_tests();
+   //paging_run_tests();
 
 
   
