@@ -1,8 +1,10 @@
 [BITS 32]
 [GLOBAL _start]
 [EXTERN kernel_main]
-[GLOBAL stack_top]
 [EXTERN setup]
+
+
+extern __stack_top
 
 
 
@@ -28,14 +30,13 @@ multiboot_header_start:
 multiboot_header_end:
 
 
-SECTION .text
+SECTION .text.stub
 
 _start:
 
     ; set stack top
-    mov esp, stack_top
+    mov esp, __stack_top
 
-    
     call setup
 
 .hang:
@@ -43,8 +44,3 @@ _start:
     hlt
     jmp .hang
 
-SECTION .bss
-align 16
-stack_bottom:
-    resb 16384   ; 16 kb stack 
-stack_top:

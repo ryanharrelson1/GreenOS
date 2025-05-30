@@ -13,7 +13,7 @@
 #include "vmm/vmm.h"
 
 
-extern uint32_t stack_top;
+extern uint32_t __stack_top;
  extern uint64_t bitmap_phys_start;
  extern uint8_t* bitmap;
  extern size_t bitmap_size;
@@ -62,7 +62,7 @@ extern uint32_t stack_top;
 void kernel_main(uintptr_t  mb_info_addr) {
     init_serial();
     gdt_install();
-    tss_install(5, 0x10, (uint32_t)&stack_top);
+    tss_install(5, 0x10, (uint32_t)&__stack_top);
     idt_install();
     pic_remap();
     handlers_install();

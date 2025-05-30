@@ -6,208 +6,218 @@ Name             Origin             Length             Attributes
 
 Linker script and memory map
 
-                0xc0000000                        KERNEL_VIRT_BASE = 0xc0000000
-                0x00100000                        KERNEL_PHYS_BASE = 0x100000
-                0xc0000000                        . = KERNEL_VIRT_BASE
-                0xc0000000                        kernel_start = .
+                0x00100000                        . = 0x100000
 
-.multiboot2     0xc0000000       0x28 load address 0x00100000
- *(.multiboot2)
- .multiboot2    0xc0000000       0x28 boot.o
+.text.stub      0x00100000       0x54
+ *(.text.stub)
+ .text.stub     0x00100000        0xe boot.o
+                0x00100000                _start
+ .text.stub     0x0010000e       0x46 setup.o
+                0x0010000e                setup
 
-.early_init     0xc0001000       0x1e load address 0x00100028
- *(.early_init)
- .early_init    0xc0001000       0x1e setup.o
-                0xc0001000                setup
+.data.stub
+ *(.data.stub)
 
-.text           0xc0002000     0x2f7c load address 0x00101028
- *(.text*)
- .text          0xc0002000        0xe boot.o
-                0xc0002000                _start
- .text          0xc000200e      0x275 kernel.o
-                0xc000200e                test_bitmap_identity_mapping
-                0xc0002187                kernel_main
-                0xc000223c                trigger_invalid_opcode
-                0xc0002241                trigger_divide_by_zero
-                0xc0002262                trigger_page_fault
-                0xc000227b                trigger_gpf
- .text          0xc0002283       0x3c io.o
-                0xc0002283                outb
-                0xc00022a2                inb
- .text          0xc00022bf      0x28d serial.o
-                0xc00022e4                init_serial
-                0xc000234a                write_serial
-                0xc0002376                write_serial_string
-                0xc00023a7                serial_write_dec
-                0xc0002467                serial_write_hex32
-                0xc00024ce                serial_write_hex64
- .text          0xc000254c      0x361 panic.o
-                0xc000254c                panic
-                0xc00025ff                get_eip
-                0xc0002613                dump_cpu_registers
-                0xc00027ac                panic_print_backtrace
-                0xc0002829                print_stack
- .text          0xc00028ad      0x26e gdt.o
-                0xc00028ad                gdt_set_gate
-                0xc000294b                gdt_install
-                0xc00029ef                gdt_self_test
- .text          0xc0002b1b      0x165 tss.o
-                0xc0002bc0                tss_install
-                0xc0002be7                set_kernel_stack
-                0xc0002bf5                tss_self_test
- .text          0xc0002c80       0x21 gdt_flush.o
-                0xc0002c80                gdt_flush
-                0xc0002c99                tss_flush
- .text          0xc0002ca1       0xfb idt.o
-                0xc0002ca1                idt_set_gate
-                0xc0002d0b                idt_install
- *fill*         0xc0002d9c        0x4 
- .text          0xc0002da0        0x8 idt_flush.o
-                0xc0002da0                idt_flush
- .text          0xc0002da8       0xe5 pic.o
-                0xc0002da8                pic_remap
- .text          0xc0002e8d       0xca handler_init.o
-                0xc0002e8d                handlers_install
- .text          0xc0002f57      0x11a exception.o
-                0xc0002f57                isr_divide_by_zero_stub_handler
-                0xc0002f8c                isr_double_fault_stub_handler
-                0xc0002fc1                isr_gpf_stub_handler
-                0xc0002ff6                isr_page_fault_stub_handler
-                0xc0003023                isr_generic_exception_stub_handler
-                0xc0003058                syscall
- *fill*         0xc0003071        0xf 
- .text          0xc0003080       0x5d isr_stub.o
-                0xc0003080                isr_divide_by_zero_stub
-                0xc000308f                isr_double_fault_stub
-                0xc00030a0                isr_gpf_stub
-                0xc00030b1                isr_page_fault_stub
-                0xc00030c2                isr_generic_exception_stub
-                0xc00030d4                isr_syscall
- .text          0xc00030dd      0x12d memory_map.o
-                0xc00030dd                parse_memory_map
- .text          0xc000320a      0x815 pmm.o
-                0xc000320a                pmm_init
-                0xc000354f                pmm_alloc_page
-                0xc0003660                pmm_free_page
-                0xc00036e0                pmm_mark_region_used
-                0xc0003794                pmm_get_free_page_count
-                0xc00038c3                pmm_get_used_page_count
-                0xc00038e0                pmm_print_total_memory
-                0xc000390e                pmm_print_free_memory
- .text          0xc0003a1f       0x74 memset.o
-                0xc0003a1f                memset
-                0xc0003a52                memcpy
- .text          0xc0003a93      0xb39 paging.o
-                0xc0003ad0                map_physical_memory_window
-                0xc0003bae                get_page_table_virt
-                0xc0003bbe                paging_map_page
-                0xc0003ed5                paging_unmap_page
-                0xc00040a1                paging_init
-                0xc0004485                paging_run_tests
- .text          0xc00045cc      0x9b0 vmm.o
-                0xc00045de                vmm_region_alloc
-                0xc00046c7                vmm_init
-                0xc000475b                vmm_region_slab_init
-                0xc00049d6                vmm_region_free
-                0xc0004a18                vmm_alloc
-                0xc0004d7a                vmm_free
-                0xc0004e20                vmm_run_inline_tests
- .text          0xc0004f7c        0x0 setup.o
+.stack          0x00100054     0x100c
+                0x00100060                        . = ALIGN (0x10)
+ *fill*         0x00100054        0xc 
+                0x00100060                        __stack_bottom = .
+                0x00101060                        . = (. + 0x1000)
+ *fill*         0x00100060     0x1000 
+                0x00101060                        __stack_top = .
+                0x00101060                        __stack_top = .
+                0xc0000000                        . = 0xc0000000
 
-.iplt           0xc0004f7c        0x0 load address 0x00103fa4
- .iplt          0xc0004f7c        0x0 boot.o
+.text           0xc0000000     0x2f7c load address 0x00102000
+ *(.text)
+ .text          0xc0000000      0x275 kernel.o
+                0xc0000000                test_bitmap_identity_mapping
+                0xc0000179                kernel_main
+                0xc000022e                trigger_invalid_opcode
+                0xc0000233                trigger_divide_by_zero
+                0xc0000254                trigger_page_fault
+                0xc000026d                trigger_gpf
+ .text          0xc0000275       0x3c io.o
+                0xc0000275                outb
+                0xc0000294                inb
+ .text          0xc00002b1      0x28d serial.o
+                0xc00002d6                init_serial
+                0xc000033c                write_serial
+                0xc0000368                write_serial_string
+                0xc0000399                serial_write_dec
+                0xc0000459                serial_write_hex32
+                0xc00004c0                serial_write_hex64
+ .text          0xc000053e      0x361 panic.o
+                0xc000053e                panic
+                0xc00005f1                get_eip
+                0xc0000605                dump_cpu_registers
+                0xc000079e                panic_print_backtrace
+                0xc000081b                print_stack
+ .text          0xc000089f      0x26e gdt.o
+                0xc000089f                gdt_set_gate
+                0xc000093d                gdt_install
+                0xc00009e1                gdt_self_test
+ .text          0xc0000b0d      0x165 tss.o
+                0xc0000bb2                tss_install
+                0xc0000bd9                set_kernel_stack
+                0xc0000be7                tss_self_test
+ *fill*         0xc0000c72        0xe 
+ .text          0xc0000c80       0x21 gdt_flush.o
+                0xc0000c80                gdt_flush
+                0xc0000c99                tss_flush
+ .text          0xc0000ca1       0xfb idt.o
+                0xc0000ca1                idt_set_gate
+                0xc0000d0b                idt_install
+ *fill*         0xc0000d9c        0x4 
+ .text          0xc0000da0        0x8 idt_flush.o
+                0xc0000da0                idt_flush
+ .text          0xc0000da8       0xe5 pic.o
+                0xc0000da8                pic_remap
+ .text          0xc0000e8d       0xca handler_init.o
+                0xc0000e8d                handlers_install
+ .text          0xc0000f57      0x11a exception.o
+                0xc0000f57                isr_divide_by_zero_stub_handler
+                0xc0000f8c                isr_double_fault_stub_handler
+                0xc0000fc1                isr_gpf_stub_handler
+                0xc0000ff6                isr_page_fault_stub_handler
+                0xc0001023                isr_generic_exception_stub_handler
+                0xc0001058                syscall
+ *fill*         0xc0001071        0xf 
+ .text          0xc0001080       0x5d isr_stub.o
+                0xc0001080                isr_divide_by_zero_stub
+                0xc000108f                isr_double_fault_stub
+                0xc00010a0                isr_gpf_stub
+                0xc00010b1                isr_page_fault_stub
+                0xc00010c2                isr_generic_exception_stub
+                0xc00010d4                isr_syscall
+ .text          0xc00010dd      0x12d memory_map.o
+                0xc00010dd                parse_memory_map
+ .text          0xc000120a      0x815 pmm.o
+                0xc000120a                pmm_init
+                0xc000154f                pmm_alloc_page
+                0xc0001660                pmm_free_page
+                0xc00016e0                pmm_mark_region_used
+                0xc0001794                pmm_get_free_page_count
+                0xc00018c3                pmm_get_used_page_count
+                0xc00018e0                pmm_print_total_memory
+                0xc000190e                pmm_print_free_memory
+ .text          0xc0001a1f       0x74 memset.o
+                0xc0001a1f                memset
+                0xc0001a52                memcpy
+ .text          0xc0001a93      0xb39 paging.o
+                0xc0001ad0                map_physical_memory_window
+                0xc0001bae                get_page_table_virt
+                0xc0001bbe                paging_map_page
+                0xc0001ed5                paging_unmap_page
+                0xc00020a1                paging_init
+                0xc0002485                paging_run_tests
+ .text          0xc00025cc      0x9b0 vmm.o
+                0xc00025de                vmm_region_alloc
+                0xc00026c7                vmm_init
+                0xc000275b                vmm_region_slab_init
+                0xc00029d6                vmm_region_free
+                0xc0002a18                vmm_alloc
+                0xc0002d7a                vmm_free
+                0xc0002e20                vmm_run_inline_tests
+ .text          0xc0002f7c        0x0 setup.o
 
-.rodata         0xc0005000     0x122e load address 0x00104028
- *(.rodata*)
- .rodata        0xc0005000       0xd7 kernel.o
- .rodata        0xc00050d7        0x3 serial.o
- .rodata        0xc00050da       0xb4 panic.o
- *fill*         0xc000518e        0x2 
- .rodata        0xc0005190       0xd1 gdt.o
- *fill*         0xc0005261        0x3 
- .rodata        0xc0005264       0x86 tss.o
- *fill*         0xc00052ea        0x2 
- .rodata        0xc00052ec       0x20 idt.o
- .rodata        0xc000530c       0xb3 exception.o
- *fill*         0xc00053bf        0x1 
- .rodata        0xc00053c0      0x222 pmm.o
- *fill*         0xc00055e2        0x2 
- .rodata        0xc00055e4      0x6b7 paging.o
- *fill*         0xc0005c9b        0x1 
- .rodata        0xc0005c9c      0x57a vmm.o
- .rodata        0xc0006216       0x18 setup.o
+.iplt           0xc0002f7c        0x0 load address 0x00104f7c
+ .iplt          0xc0002f7c        0x0 boot.o
 
-.rel.dyn        0xc0006230        0x0 load address 0x00105258
- .rel.got       0xc0006230        0x0 boot.o
- .rel.iplt      0xc0006230        0x0 boot.o
- .rel.text      0xc0006230        0x0 boot.o
+.rodata         0xc0002f7c     0x1216 load address 0x00104f7c
+ *(.rodata)
+ .rodata        0xc0002f7c       0xd7 kernel.o
+ .rodata        0xc0003053        0x3 serial.o
+ .rodata        0xc0003056       0xb4 panic.o
+ *fill*         0xc000310a        0x2 
+ .rodata        0xc000310c       0xd1 gdt.o
+ *fill*         0xc00031dd        0x3 
+ .rodata        0xc00031e0       0x86 tss.o
+ *fill*         0xc0003266        0x2 
+ .rodata        0xc0003268       0x20 idt.o
+ .rodata        0xc0003288       0xb3 exception.o
+ *fill*         0xc000333b        0x1 
+ .rodata        0xc000333c      0x222 pmm.o
+ *fill*         0xc000355e        0x2 
+ .rodata        0xc0003560      0x6b7 paging.o
+ *fill*         0xc0003c17        0x1 
+ .rodata        0xc0003c18      0x57a vmm.o
 
-.data           0xc0007000        0x0 load address 0x00106028
- *(.data*)
- .data          0xc0007000        0x0 kernel.o
- .data          0xc0007000        0x0 io.o
- .data          0xc0007000        0x0 serial.o
- .data          0xc0007000        0x0 panic.o
- .data          0xc0007000        0x0 gdt.o
- .data          0xc0007000        0x0 tss.o
- .data          0xc0007000        0x0 idt.o
- .data          0xc0007000        0x0 pic.o
- .data          0xc0007000        0x0 handler_init.o
- .data          0xc0007000        0x0 exception.o
- .data          0xc0007000        0x0 memory_map.o
- .data          0xc0007000        0x0 pmm.o
- .data          0xc0007000        0x0 memset.o
- .data          0xc0007000        0x0 paging.o
- .data          0xc0007000        0x0 vmm.o
- .data          0xc0007000        0x0 setup.o
+.multiboot2     0xc0004198       0x28 load address 0x00106198
+ .multiboot2    0xc0004198       0x28 boot.o
 
-.got            0xc0006230        0x0 load address 0x00105258
- .got           0xc0006230        0x0 boot.o
+.rel.dyn        0xc00041c0        0x0 load address 0x001061c0
+ .rel.got       0xc00041c0        0x0 boot.o
+ .rel.iplt      0xc00041c0        0x0 boot.o
+ .rel.text.stub
+                0xc00041c0        0x0 boot.o
+ .rel.text      0xc00041c0        0x0 boot.o
 
-.got.plt        0xc0006230        0x0 load address 0x00105258
- .got.plt       0xc0006230        0x0 boot.o
+.data           0xc00041c0        0x0 load address 0x001061c0
+ *(.data)
+ .data          0xc00041c0        0x0 kernel.o
+ .data          0xc00041c0        0x0 io.o
+ .data          0xc00041c0        0x0 serial.o
+ .data          0xc00041c0        0x0 panic.o
+ .data          0xc00041c0        0x0 gdt.o
+ .data          0xc00041c0        0x0 tss.o
+ .data          0xc00041c0        0x0 idt.o
+ .data          0xc00041c0        0x0 pic.o
+ .data          0xc00041c0        0x0 handler_init.o
+ .data          0xc00041c0        0x0 exception.o
+ .data          0xc00041c0        0x0 memory_map.o
+ .data          0xc00041c0        0x0 pmm.o
+ .data          0xc00041c0        0x0 memset.o
+ .data          0xc00041c0        0x0 paging.o
+ .data          0xc00041c0        0x0 vmm.o
+ .data          0xc00041c0        0x0 setup.o
 
-.igot.plt       0xc0006230        0x0 load address 0x00105258
- .igot.plt      0xc0006230        0x0 boot.o
+.got            0xc00041c0        0x0 load address 0x001061c0
+ .got           0xc00041c0        0x0 boot.o
 
-.bss            0xc0007000     0x4bb4 load address 0x00106028
- *(.bss*)
- .bss           0xc0007000     0x4000 boot.o
-                0xc000b000                stack_top
- .bss           0xc000b000        0x0 kernel.o
- .bss           0xc000b000        0x0 io.o
- .bss           0xc000b000        0x0 serial.o
- .bss           0xc000b000        0x0 panic.o
- .bss           0xc000b000       0x36 gdt.o
-                0xc000b000                gdt_entries
-                0xc000b030                gdt_ptr
- *fill*         0xc000b036        0xa 
- .bss           0xc000b040       0x68 tss.o
-                0xc000b040                tss_entry
- *fill*         0xc000b0a8       0x18 
- .bss           0xc000b0c0      0x80e idt.o
-                0xc000b0c0                idt_entries
-                0xc000b8c0                idt_ptr
-                0xc000b8c8                idtr_actual
- .bss           0xc000b8ce        0x0 pic.o
- .bss           0xc000b8ce        0x0 handler_init.o
- .bss           0xc000b8ce        0x0 exception.o
- *fill*         0xc000b8ce       0x12 
- .bss           0xc000b8e0      0x284 memory_map.o
-                0xc000b8e0                mem_regions
-                0xc000bb60                region_count
- *fill*         0xc000bb64        0x4 
- .bss           0xc000bb68       0x2c pmm.o
-                0xc000bb68                bitmap_phys_start
-                0xc000bb70                bitmap_phys_end
-                0xc000bb74                bitmap
-                0xc000bb78                bitmap_size
- .bss           0xc000bb94        0x0 memset.o
- .bss           0xc000bb94        0x8 paging.o
- .bss           0xc000bb9c       0x18 vmm.o
- .bss           0xc000bbb4        0x0 setup.o
+.got.plt        0xc00041c0        0x0 load address 0x001061c0
+ .got.plt       0xc00041c0        0x0 boot.o
+
+.igot.plt       0xc00041c0        0x0 load address 0x001061c0
+ .igot.plt      0xc00041c0        0x0 boot.o
+
+.bss            0xc00041c0      0xbb4 load address 0x001061c0
  *(COMMON)
-                0xc000bbb4                        _kernel_end = .
+ *(.bss)
+ .bss           0xc00041c0        0x0 kernel.o
+ .bss           0xc00041c0        0x0 io.o
+ .bss           0xc00041c0        0x0 serial.o
+ .bss           0xc00041c0        0x0 panic.o
+ .bss           0xc00041c0       0x36 gdt.o
+                0xc00041c0                gdt_entries
+                0xc00041f0                gdt_ptr
+ *fill*         0xc00041f6        0xa 
+ .bss           0xc0004200       0x68 tss.o
+                0xc0004200                tss_entry
+ *fill*         0xc0004268       0x18 
+ .bss           0xc0004280      0x80e idt.o
+                0xc0004280                idt_entries
+                0xc0004a80                idt_ptr
+                0xc0004a88                idtr_actual
+ .bss           0xc0004a8e        0x0 pic.o
+ .bss           0xc0004a8e        0x0 handler_init.o
+ .bss           0xc0004a8e        0x0 exception.o
+ *fill*         0xc0004a8e       0x12 
+ .bss           0xc0004aa0      0x284 memory_map.o
+                0xc0004aa0                mem_regions
+                0xc0004d20                region_count
+ *fill*         0xc0004d24        0x4 
+ .bss           0xc0004d28       0x2c pmm.o
+                0xc0004d28                bitmap_phys_start
+                0xc0004d30                bitmap_phys_end
+                0xc0004d34                bitmap
+                0xc0004d38                bitmap_size
+ .bss           0xc0004d54        0x0 memset.o
+ .bss           0xc0004d54        0x8 paging.o
+ .bss           0xc0004d5c       0x18 vmm.o
+ .bss           0xc0004d74        0x0 setup.o
+                0xc0004d74                        _kernel_end = .
+                [!provide]                        PROVIDE (__stack_top = __stack_top)
 LOAD boot.o
 LOAD kernel.o
 LOAD io.o

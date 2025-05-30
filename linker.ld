@@ -1,38 +1,50 @@
 ENTRY(_start)
 
-KERNEL_VIRT_BASE = 0xC0000000;
-KERNEL_PHYS_BASE = 0x00100000;
 
-SECTIONS
-{
-    . = KERNEL_VIRT_BASE;
-    kernel_start = .;
+SECTIONS {
+  . = 0x00100000; /* Physical load address */
 
-    .multiboot2 ALIGN(0x1000) : AT(KERNEL_PHYS_BASE) {
-        KEEP(*(.multiboot2))
-    }
+  /* Boot stub in low memory */
+  .text.stub : {
+    KEEP(*(.text.stub))
+  }
 
-     .early_init ALIGN(0x1000) : AT(LOADADDR(.multiboot2) + SIZEOF(.multiboot2)) {
-        *(.early_init)
-    }
+  .data.stub : {
+    *(.data.stub)
+  }
 
+  /* Stack for stub */
+  
+  
+  .stack (NOLOAD) : {
+    . = ALIGN(16);
+    __stack_bottom = .;
+    . = . + 0x1000; /* 4 KB stack */
+     __stack_top = .;
+  }
+  __stack_top = .;
 
-    .text ALIGN(0x1000) : {
-        *(.text*)
-    }
+  /* High-half kernel: linked at 0xC0000000 */
+  . = 0xC0000000;
 
-    .rodata ALIGN(0x1000) : {
-        *(.rodata*)
-    }
+ .text : AT(ADDR(.text) - 0xC0000000 + 0x00102000) {
+  *(.text)
+}
 
-    .data ALIGN(0x1000) : {
-        *(.data*)
-    }
+.rodata : AT(ADDR(.rodata) - 0xC0000000 + 0x00102000) {
+  *(.rodata)
+}
 
-    .bss ALIGN(0x1000) : {
-        *(.bss*)
-        *(COMMON)
-    }
+.data : AT(ADDR(.data) - 0xC0000000 + 0x00102000) {
+  *(.data)
+}
 
-    _kernel_end = .;
+.bss : AT(ADDR(.bss) - 0xC0000000 + 0x00102000) {
+  *(COMMON)
+  *(.bss)
+}
+
+  _kernel_end = .;
+  
+    PROVIDE(__stack_top = __stack_top);
 }
