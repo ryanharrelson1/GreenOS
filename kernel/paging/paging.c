@@ -186,25 +186,11 @@ void paging_unmap_page(uintptr_t virtual_addr) {
 
 
 uintptr_t paging_init(uintptr_t identity_map_end) {
-    write_serial_string("[paging_init] Called with identity_map_end=");
-      serial_write_hex32((uint32_t)identity_map_end);
-    write_serial_string("\n");
-
     identity_map_end = ALIGN_UP(identity_map_end, PAGE_SIZE);
-     write_serial_string("[paging_init] Aligned identity_map_end=0x");
-    serial_write_hex32((uint32_t)identity_map_end);
-    write_serial_string("\n");
-
 
     // these are for paging init only do not use 
    uint32_t temp_pages = identity_map_end / PAGE_SIZE;
     uint32_t tables_needed = (temp_pages + PAGE_ENTRIES - 1) / PAGE_ENTRIES;
-
-    write_serial_string("[paging_init] total_pages=0x");
-    serial_write_hex32(temp_pages);
-    write_serial_string(", tables_needed=0x");
-    serial_write_hex32(tables_needed);
-    write_serial_string("\n");
 
 
     // Allocate page tables and directory after the identity-mapped region
@@ -214,21 +200,12 @@ uintptr_t paging_init(uintptr_t identity_map_end) {
 
     uint32_t total_pages = final_end / PAGE_SIZE;
 
-    write_serial_string("[paging_init] page_tables_start=0x");
-    serial_write_hex32((uint32_t)page_tables_start);
-    write_serial_string(", page_directory_start=0x");
-    serial_write_hex32((uint32_t)page_directory_start);
-    write_serial_string(", final_end=0x");
-    serial_write_hex32((uint32_t)final_end);
-    write_serial_string("\n");
 
     page_tables = (uint32_t*)page_tables_start;
     page_directory = (uint32_t*)page_directory_start;
 
-     write_serial_string("[paging_init] Clearing page tables and directory memory\n");
     memset(page_tables, 0, tables_needed * PAGE_SIZE);
     memset(page_directory, 0, PAGE_SIZE);
-write_serial_string("[paging_init] Identity mapping pages...\n");
     // Identity map all pages up to final_end
     for (uint32_t page_idx = 0; page_idx < total_pages; page_idx++) {
         uint32_t table_idx = page_idx / PAGE_ENTRIES;
@@ -238,30 +215,17 @@ write_serial_string("[paging_init] Identity mapping pages...\n");
             // Point page directory entry to this page table
             page_directory[table_idx] = ((uintptr_t)&page_tables[table_idx * PAGE_ENTRIES]) | PDE_PRESENT | PDE_RW;
 
-            write_serial_string("[paging_init] PDE set at index ");
-            serial_write_hex32(table_idx);
-            write_serial_string(" to 0x");
-            serial_write_hex32(page_directory[table_idx]);
-            write_serial_string("\n");
         }
 
-      
 
         page_tables[page_idx] = (page_idx * PAGE_SIZE) | PTE_PRESENT | PTE_RW;
 
 
-         write_serial_string("[paging_init] PTE set at index ");
-        serial_write_hex32(page_idx);
-        write_serial_string(" to 0x");
-        serial_write_hex32(page_tables[page_idx]);
-        write_serial_string("\n");
     } 
 
     page_directory[1023] = ((uintptr_t)page_directory) | PDE_PRESENT | PDE_RW;
 
-    write_serial_string("[paging_init] Set recursive mapping at PDE index 1023\n");
     
-    map_physical_memory_window(final_end);
  
     // Load CR3 and enable paging
     __asm__ __volatile__ (
@@ -273,25 +237,15 @@ write_serial_string("[paging_init] Identity mapping pages...\n");
         : "r"(page_directory)
         : "eax"
     );
-       
-
-     write_serial_string("[paging_init] Loading CR3 and enabling paging\n");
-
+    
   uintptr_t phys = page_directory_start;
    uint32_t dir_idx = phys >> 22;
 
-write_serial_string("Checking if page directory is mapped at dir_idx: ");
-serial_write_hex32(dir_idx);
-write_serial_string("\n");
 
 if (page_directory[dir_idx] & PDE_PRESENT) {
-    write_serial_string("Page directory is mapped!\n");
 } else {
-    write_serial_string("Page directory is NOT mapped!\n");
-}
+ }
 
-
-write_serial_string("[paging_init] Jumping to higher half kernel...\n");
 
 __asm__ __volatile__ (
     "mov %0, %%esp\n"   // Set stack pointer to higher half stack

@@ -74,10 +74,6 @@ void pmm_init(struct mem_region* regions, size_t region_count){
 
   bitmap_set(0);  
 
-    pmm_print_total_memory();
-    pmm_print_free_memory();
-
-   pmm_self_test();
 
 }
 
