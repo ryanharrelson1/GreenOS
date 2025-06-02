@@ -37,6 +37,8 @@ _start:
     ; set stack top
     mov esp, __stack_top
 
+    push ebx
+
     call setup
 
 .hang:

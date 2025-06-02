@@ -4,6 +4,10 @@ ENTRY(_start)
 SECTIONS {
   . = 0x00100000; /* Physical load address */
 
+  .multiboot : {
+    KEEP(*(.multiboot))
+    }
+
   /* Boot stub in low memory */
   .text.stub : {
     KEEP(*(.text.stub))

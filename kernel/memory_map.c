@@ -1,15 +1,15 @@
 #include "memory_map.h"
 #include "multiboot2.h"
 #include <stddef.h> // for size_t
-#include "consol/serial.h"
-#include "pmm/pmm.h"
+
+
 
 #define MAX_REGIONS 32
 
 struct mem_region mem_regions[MAX_REGIONS]; // for use by pmm
 size_t region_count = 0;
 
-
+__attribute__((section(".text.stub")))
 void parse_memory_map(uintptr_t mb_info_addr){
 
     struct multiboot_tag *tag = (struct multiboot_tag *)(mb_info_addr + 8);
@@ -41,6 +41,6 @@ void parse_memory_map(uintptr_t mb_info_addr){
         }
         tag = (struct multiboot_tag *)((uintptr_t)tag + ((tag->size + 7) & ~7));
     }
-    pmm_init(mem_regions, region_count);
+    early_pmm_init(mem_regions, region_count);
     
 }
